@@ -1,0 +1,28 @@
+
+{
+	"schemaVersion": 1,
+	"id": "levelascension",
+	"version": "1.0.0",
+	"name": "Level Ascension",
+	"description": "RuneScape-style leveling system for Minecraft.",
+	"authors": ["NixonTNL"],
+	"contact": {
+		"sources": "https://github.com/nixontnl/levelascension"
+	},
+	"license": "MIT",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"net.nixontnl.levelascension.core.LevelAscension"
+		],
+		"client": [
+			"net.nixontnl.levelascension.core.LevelAscensionClient"
+		]
+	},
+	"depends": {
+		"fabricloader": ">=0.16.14",
+		"minecraft": "1.21.1",
+		"fabric": "*"
+	}
+
+}
