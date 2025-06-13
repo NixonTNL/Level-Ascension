@@ -19,7 +19,6 @@ public class SkillsScreen extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        // ✅ Fully opaque black background (blocks blur shader completely)
         context.fill(0, 0, this.width, this.height, 0xFF000000);
 
         MinecraftClient client = MinecraftClient.getInstance();
@@ -34,30 +33,27 @@ public class SkillsScreen extends Screen {
         for (String skill : data.getAllSkills()) {
             int xp = data.getXP(skill);
             int level = data.getLevel(skill);
-            int xpForNext = PlayerSkillData.getXPForLevel(level + 1);
-            float progress = Math.min(1.0f, xp / (float) xpForNext);
+            int xpCurrentLevel = PlayerSkillData.getXPForLevel(level);
+            int xpNextLevel = PlayerSkillData.getXPForLevel(level + 1);
+            int xpIntoCurrent = xp - xpCurrentLevel;
+            int xpNeeded = xpNextLevel - xpCurrentLevel;
+            float progress = Math.min(1.0f, xpIntoCurrent / (float) xpNeeded);
 
             Identifier icon = skill.equalsIgnoreCase("woodcutting") ? AXE_ICON : PICKAXE_ICON;
 
             context.drawTexture(icon, x, y + 4, 0, 0, 16, 16, 16, 16);
             context.drawText(client.textRenderer, skill.toUpperCase() + " (Lvl " + level + ")", x + 22, y, 0xFFFFFF, false);
-            context.fill(x + 22, y + 14, x + 182, y + 22, 0xFF333333); // bar background
-            context.fill(x + 22, y + 14, x + 22 + (int)(160 * progress), y + 22, 0xFFB89E00); // bar fill
+            context.fill(x + 22, y + 14, x + 182, y + 22, 0xFF333333);
+            context.fill(x + 22, y + 14, x + 22 + (int)(160 * progress), y + 22, 0xFFB89E00);
 
             y += 36;
         }
-
-        // ❌ DO NOT call super.render() — it brings back blur
-        // super.render(context, mouseX, mouseY, delta);
     }
 
-    // ✅ Prevent game from pausing — avoids blur in some versions
-    @Override
     public boolean shouldPause() {
         return false;
     }
 
-    // ✅ Used in 1.20+ mappings to prevent blur logic
     public boolean isPauseScreen() {
         return false;
     }
