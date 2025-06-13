@@ -1,7 +1,9 @@
 package net.nixontnl.levelascension.skills.base;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class PlayerSkillData {
 
@@ -10,11 +12,11 @@ public class PlayerSkillData {
     private String activeSkill = null;
 
     public void addXP(String skill, int amount) {
-        int currentXP = xpMap.getOrDefault(skill, 0);
+        int currentXP = getXP(skill);
         currentXP += amount;
         xpMap.put(skill, currentXP);
 
-        int currentLevel = levelMap.getOrDefault(skill, 1);
+        int currentLevel = getLevel(skill);
         while (currentXP >= getXPForLevel(currentLevel + 1)) {
             currentLevel++;
         }
@@ -24,7 +26,7 @@ public class PlayerSkillData {
     }
 
     public int getXP(String skill) {
-        return xpMap.getOrDefault(skill, 0);
+        return xpMap.computeIfAbsent(skill, s -> 0);
     }
 
     public void setXP(String skill, int xp) {
@@ -32,7 +34,7 @@ public class PlayerSkillData {
     }
 
     public int getLevel(String skill) {
-        return levelMap.getOrDefault(skill, 1);
+        return levelMap.computeIfAbsent(skill, s -> 1);
     }
 
     public void setLevel(String skill, int level) {
@@ -49,5 +51,13 @@ public class PlayerSkillData {
 
     public String getActiveSkill() {
         return activeSkill;
+    }
+
+    public Set<String> getAllSkills() {
+        // Return known skills even if they haven't been used yet
+        Set<String> allSkills = new HashSet<>();
+        allSkills.add("mining");
+        allSkills.add("woodcutting");
+        return allSkills;
     }
 }

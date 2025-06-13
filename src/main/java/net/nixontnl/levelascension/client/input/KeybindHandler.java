@@ -9,26 +9,27 @@ import org.lwjgl.glfw.GLFW;
 
 public class KeybindHandler {
 
-    private static KeyBinding openSkillsScreen;
+    private static KeyBinding SHOW_SKILLS_KEY;
 
     public static void register() {
-        openSkillsScreen = new KeyBinding(
-                "key.levelascension.open_skills_screen",
+        SHOW_SKILLS_KEY = new KeyBinding(
+                "key.levelascension.show_skills",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_U,
                 "category.levelascension"
         );
 
+        // Register tick event to check key press
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            while (openSkillsScreen.wasPressed()) {
-                if (client.currentScreen == null) {
+            if (SHOW_SKILLS_KEY.wasPressed()) {
+                if (client.player != null) {
                     client.setScreen(new SkillsScreen());
                 }
             }
         });
     }
 
-    public static KeyBinding getKeybind() {
-        return openSkillsScreen;
+    public static KeyBinding getShowSkillsKey() {
+        return SHOW_SKILLS_KEY;
     }
 }

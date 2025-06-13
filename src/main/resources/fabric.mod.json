@@ -16,7 +16,7 @@
 			"net.nixontnl.levelascension.core.LevelAscension"
 		],
 		"client": [
-			"net.nixontnl.levelascension.core.LevelAscensionClient"
+			"net.nixontnl.levelascension.LevelAscensionClient"
 		]
 	},
 	"depends": {
