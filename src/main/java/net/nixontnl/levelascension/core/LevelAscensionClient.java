@@ -1,14 +1,11 @@
-package net.nixontnl.levelascension;
+package net.nixontnl.levelascension.core;
 
 import net.fabricmc.api.ClientModInitializer;
-import net.nixontnl.levelascension.client.hud.SkillXpOverlay;
-import net.nixontnl.levelascension.client.input.KeybindHandler;
+import net.nixontnl.levelascension.ui.SkillHudOverlay;
 
 public class LevelAscensionClient implements ClientModInitializer {
-
     @Override
     public void onInitializeClient() {
-        new SkillXpOverlay().onInitializeClient(); // HUD
-        KeybindHandler.register(); // 👈 Register the keybind
+        new SkillHudOverlay().onInitializeClient();
     }
 }

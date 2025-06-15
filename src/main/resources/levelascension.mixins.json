@@ -3,7 +3,7 @@
 	"package": "net.nixontnl.levelascension.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
-		"ServerPlayerEntityMixin"
+
 	],
 	"client": [],
 	"injectors": {
