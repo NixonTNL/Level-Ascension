@@ -11,8 +11,12 @@
 	"license": "MIT",
 	"environment": "*",
 	"entrypoints": {
-		"main": ["net.nixontnl.levelascension.core.LevelAscension"],
-		"client": ["net.nixontnl.levelascension.core.LevelAscensionClient"]
+		"main": [
+			"net.nixontnl.levelascension.core.LevelAscension"
+		],
+		"client": [
+			"net.nixontnl.levelascension.ui.SkillHudOverlay"
+		]
 	},
 	"depends": {
 		"fabricloader": ">=0.16.14",

@@ -13,7 +13,7 @@ public class PlayerSkillData {
 
     public PlayerSkillData() {
         for (SkillType type : SkillType.values()) {
-            skillMap.put(type, new Skill());
+            skillMap.put(type, new Skill(type.name()));
         }
     }
 
@@ -22,6 +22,6 @@ public class PlayerSkillData {
     }
 
     public void addXp(SkillType type, int amount) {
-        skillMap.get(type).addXp(amount);
+        skillMap.get(type).addXP(amount);
     }
 }

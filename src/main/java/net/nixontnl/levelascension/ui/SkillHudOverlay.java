@@ -39,7 +39,7 @@ public class SkillHudOverlay implements ClientModInitializer {
             int y = screenHeight - 46; // Sits just above hotbar/vanilla hearts
 
             // XP values
-            int xp = data.getSkill(SkillType.MINING).getXp();
+            int xp = data.getSkill(SkillType.MINING).getXP();
             int level = data.getSkill(SkillType.MINING).getLevel();
             int baseXp = XPUtils.getXpForLevel(level);
             int nextXp = XPUtils.getXpForLevel(level + 1);
@@ -58,7 +58,9 @@ public class SkillHudOverlay implements ClientModInitializer {
             // Optional: draw pickaxe icon
             ItemStack icon = new ItemStack(Items.DIAMOND_PICKAXE);
             ctx.drawItem(icon, iconX, y - ((iconSize - barHeight) / 2));
-        });
 
+            // ✅ Draw the Level Up popup
+            LevelUpOverlay.render(ctx);
+        });
     }
 }
