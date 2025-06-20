@@ -5,7 +5,9 @@ import net.minecraft.block.Block;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.nixontnl.levelascension.skills.SkillType;
 import net.nixontnl.levelascension.skills.player.PlayerSkillData;
+
 import net.nixontnl.levelascension.skills.logic.mining.MiningSkillManager;
+import net.nixontnl.levelascension.skills.logic.woodcutting.WoodcuttingSkillManager;
 
 import java.util.HashMap;
 import java.util.UUID;
@@ -18,15 +20,22 @@ public class SkillEventHandler {
         PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, blockEntity) -> {
             if (!(player instanceof ServerPlayerEntity serverPlayer)) return;
 
-            UUID id = serverPlayer.getUuid();
+            UUID id = player.getUuid();
             playerSkillDataMap.putIfAbsent(id, new PlayerSkillData());
-
             PlayerSkillData data = playerSkillDataMap.get(id);
-            Block block = state.getBlock();
 
-            int xp = MiningSkillManager.getXpForBlock(block);
-            if (xp > 0) {
-                data.addXP(SkillType.MINING, serverPlayer, xp);
+            Block brokenBlock = state.getBlock();
+
+            // Mining XP
+            int miningXp = MiningSkillManager.getXpForBlock(brokenBlock);
+            if (miningXp > 0) {
+                data.addXP(SkillType.MINING, serverPlayer, miningXp);
+            }
+
+            // Woodcutting XP
+            int woodcuttingXp = WoodcuttingSkillManager.getXpForBlock(brokenBlock);
+            if (woodcuttingXp > 0) {
+                data.addXP(SkillType.WOODCUTTING, serverPlayer, woodcuttingXp);
             }
         });
     }

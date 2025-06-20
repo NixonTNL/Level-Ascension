@@ -1,10 +1,13 @@
 package net.nixontnl.levelascension.skills;
 
+import java.util.jar.Attributes;
+
 /**
  * Enum representing all possible skills. Right now we only have Mining.
  */
 public enum SkillType {
-    MINING("mining");
+    MINING("mining"),
+    WOODCUTTING("woodcutting");
 
     private final String name;
 

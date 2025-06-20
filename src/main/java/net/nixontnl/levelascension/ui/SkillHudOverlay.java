@@ -15,15 +15,20 @@ import net.nixontnl.levelascension.util.XPUtils;
 public class SkillHudOverlay implements ClientModInitializer {
     private static final Identifier ICONS = Identifier.of("minecraft", "textures/gui/icons.png");
 
+    private static SkillType activeSkill = SkillType.MINING;
+    private static long lastXpGainTime = 0;
+
     @Override
     public void onInitializeClient() {
         HudRenderCallback.EVENT.register((ctx, tickDelta) -> {
             MinecraftClient client = MinecraftClient.getInstance();
-
             if (client.player == null) return;
 
             PlayerSkillData data = SkillEventHandler.getSkillData(client.player.getUuid());
-            if (data == null || !data.shouldShowXpBar()) return; // 👈 Skip drawing
+            if (data == null) return;
+
+            long now = System.currentTimeMillis();
+            if (now - lastXpGainTime > 3000) return; // ⛔ hide after 3s
 
             int screenWidth = client.getWindow().getScaledWidth();
             int screenHeight = client.getWindow().getScaledHeight();
@@ -37,32 +42,30 @@ public class SkillHudOverlay implements ClientModInitializer {
             int baseX = (screenWidth / 2) - (totalWidth / 2) - 10;
             int iconX = baseX;
             int barX = iconX + iconSize + spacing;
-            int y = screenHeight - 46; // Sits just above hotbar/vanilla hearts
+            int y = screenHeight - 46;
 
-            // XP values
-            int xp = data.getSkill(SkillType.MINING).getXP();
-            int level = data.getSkill(SkillType.MINING).getLevel();
+            int xp = data.getSkill(activeSkill).getXP();
+            int level = data.getSkill(activeSkill).getLevel();
             int baseXp = XPUtils.getXpForLevel(level);
             int nextXp = XPUtils.getXpForLevel(level + 1);
             float progress = (float)(xp - baseXp) / (nextXp - baseXp);
             int fillWidth = (int)(barWidth * progress);
 
-            // Draw border (black outline)
-            ctx.fill(barX - 1, y - 1, barX + barWidth + 1, y + barHeight + 1, 0xFF000000);
+            ctx.fill(barX - 1, y - 1, barX + barWidth + 1, y + barHeight + 1, 0xFF000000); // Border
+            ctx.fill(barX, y, barX + barWidth, y + barHeight, 0xFF444444); // BG
+            ctx.fill(barX, y, barX + fillWidth, y + barHeight, 0xFF2ECC71); // Fill
 
-            // Draw background (dark gray)
-            ctx.fill(barX, y, barX + barWidth, y + barHeight, 0xFF444444);
-
-            // Draw fill (green)
-            ctx.fill(barX, y, barX + fillWidth, y + barHeight, 0xFF2ECC71);
-
-            // Optional: draw pickaxe icon
-            ItemStack icon = new ItemStack(Items.DIAMOND_PICKAXE);
+            ItemStack icon = new ItemStack(
+                    activeSkill == SkillType.WOODCUTTING ? Items.DIAMOND_AXE : Items.DIAMOND_PICKAXE
+            );
             ctx.drawItem(icon, iconX, y - ((iconSize - barHeight) / 2));
 
-            // ✅ Draw the Level Up popup
-            LevelUpOverlay.render(ctx);
-
+            LevelUpOverlay.render(ctx); // Popup text
         });
+    }
+
+    public static void setActiveSkill(SkillType skill) {
+        activeSkill = skill;
+        lastXpGainTime = System.currentTimeMillis();
     }
 }

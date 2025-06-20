@@ -3,6 +3,8 @@ package net.nixontnl.levelascension.skills.player;
 import net.nixontnl.levelascension.skills.Skill;
 import net.nixontnl.levelascension.skills.SkillType;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.nixontnl.levelascension.ui.SkillHudOverlay;
+
 
 
 import java.util.EnumMap;
@@ -27,7 +29,7 @@ public class PlayerSkillData {
         Skill skill = skillMap.get(type);
         if (skill != null) {
             skill.addXP(player, amount);
-            updateLastXpGainTime(); // 👈 Call this here
+            SkillHudOverlay.setActiveSkill(type);
         }
     }
 
