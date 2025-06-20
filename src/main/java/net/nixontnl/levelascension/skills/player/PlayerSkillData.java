@@ -24,6 +24,21 @@ public class PlayerSkillData {
     }
 
     public void addXP(SkillType type, ServerPlayerEntity player, int amount) {
-        skillMap.get(type).addXP(player, amount);
+        Skill skill = skillMap.get(type);
+        if (skill != null) {
+            skill.addXP(player, amount);
+            updateLastXpGainTime(); // 👈 Call this here
+        }
     }
+
+    private long lastXpGainTime = 0;
+
+    public void updateLastXpGainTime() {
+        this.lastXpGainTime = System.currentTimeMillis();
+    }
+
+    public boolean shouldShowXpBar() {
+        return System.currentTimeMillis() - lastXpGainTime <= 3000; // 3 seconds
+    }
+
 }

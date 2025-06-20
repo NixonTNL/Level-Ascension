@@ -24,7 +24,7 @@ public class Skill {
         this.xp += amount;
         int newLevel = getLevel();
 
-        if (newLevel > oldLevel) {
+        if (newLevel > oldLevel && MinecraftClient.getInstance() != null) {
             // Show popup on client
             MinecraftClient.getInstance().execute(() ->
                     LevelUpPopupManager.showMessage(this.name, newLevel)

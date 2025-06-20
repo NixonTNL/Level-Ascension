@@ -19,10 +19,11 @@ public class SkillHudOverlay implements ClientModInitializer {
     public void onInitializeClient() {
         HudRenderCallback.EVENT.register((ctx, tickDelta) -> {
             MinecraftClient client = MinecraftClient.getInstance();
+
             if (client.player == null) return;
 
             PlayerSkillData data = SkillEventHandler.getSkillData(client.player.getUuid());
-            if (data == null) return;
+            if (data == null || !data.shouldShowXpBar()) return; // 👈 Skip drawing
 
             int screenWidth = client.getWindow().getScaledWidth();
             int screenHeight = client.getWindow().getScaledHeight();
@@ -61,6 +62,7 @@ public class SkillHudOverlay implements ClientModInitializer {
 
             // ✅ Draw the Level Up popup
             LevelUpOverlay.render(ctx);
+
         });
     }
 }
