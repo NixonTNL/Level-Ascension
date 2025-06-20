@@ -1,8 +1,14 @@
 package net.nixontnl.levelascension.skills;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.particle.ParticleTypes;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.nixontnl.levelascension.ui.LevelUpOverlay;
 import net.nixontnl.levelascension.util.XPUtils;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.sound.SoundCategory;
+import net.nixontnl.levelascension.ui.LevelUpPopupManager;
 
 public class Skill {
     private final String name;
@@ -13,14 +19,23 @@ public class Skill {
         this.xp = 0;
     }
 
-    public void addXP(int amount) {
+    public void addXP(ServerPlayerEntity player, int amount) {
         int oldLevel = getLevel();
         this.xp += amount;
         int newLevel = getLevel();
 
-        if (newLevel > oldLevel && MinecraftClient.getInstance() != null) {
+        if (newLevel > oldLevel) {
+            // Show popup on client
             MinecraftClient.getInstance().execute(() ->
-                    LevelUpOverlay.show(this.name, newLevel)  // 🔥 Correct method
+                    LevelUpPopupManager.showMessage(this.name, newLevel)
+            );
+
+            // Spawn particles
+            ServerWorld world = player.getServerWorld();
+            world.spawnParticles(
+                    ParticleTypes.HAPPY_VILLAGER,
+                    player.getX(), player.getY() + 1.5, player.getZ(),
+                    20, 0.2, 0.5, 0.2, 0.05
             );
         }
     }

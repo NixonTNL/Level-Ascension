@@ -2,6 +2,8 @@ package net.nixontnl.levelascension.skills.player;
 
 import net.nixontnl.levelascension.skills.Skill;
 import net.nixontnl.levelascension.skills.SkillType;
+import net.minecraft.server.network.ServerPlayerEntity;
+
 
 import java.util.EnumMap;
 
@@ -21,7 +23,7 @@ public class PlayerSkillData {
         return skillMap.get(type);
     }
 
-    public void addXp(SkillType type, int amount) {
-        skillMap.get(type).addXP(amount);
+    public void addXP(SkillType type, ServerPlayerEntity player, int amount) {
+        skillMap.get(type).addXP(player, amount);
     }
 }

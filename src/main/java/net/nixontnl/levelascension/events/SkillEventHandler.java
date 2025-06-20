@@ -28,7 +28,7 @@ public class SkillEventHandler {
             PlayerSkillData data = playerSkillDataMap.get(id);
 
             if (state.getBlock() == Blocks.STONE) {
-                data.addXp(SkillType.MINING, 15); // Award 15 XP per stone block
+                data.addXP(SkillType.MINING, (ServerPlayerEntity) player, 15);
                 int level = data.getSkill(SkillType.MINING).getLevel();
                 /* player.sendMessage(Text.literal("Mining XP: " + data.getSkill(SkillType.MINING).getXp() +
                         " | Level: " + level), true); */
