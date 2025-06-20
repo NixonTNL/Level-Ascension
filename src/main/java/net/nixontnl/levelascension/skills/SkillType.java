@@ -7,7 +7,8 @@ import java.util.jar.Attributes;
  */
 public enum SkillType {
     MINING("mining"),
-    WOODCUTTING("woodcutting");
+    WOODCUTTING("woodcutting"),
+    EXCAVATION("excavation");
 
     private final String name;
 

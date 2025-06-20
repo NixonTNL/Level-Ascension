@@ -8,6 +8,7 @@ import net.nixontnl.levelascension.skills.player.PlayerSkillData;
 
 import net.nixontnl.levelascension.skills.logic.mining.MiningSkillManager;
 import net.nixontnl.levelascension.skills.logic.woodcutting.WoodcuttingSkillManager;
+import net.nixontnl.levelascension.skills.logic.excavation.ExcavationSkillManager;
 
 import java.util.HashMap;
 import java.util.UUID;
@@ -36,6 +37,12 @@ public class SkillEventHandler {
             int woodcuttingXp = WoodcuttingSkillManager.getXpForBlock(brokenBlock);
             if (woodcuttingXp > 0) {
                 data.addXP(SkillType.WOODCUTTING, serverPlayer, woodcuttingXp);
+            }
+
+            // Excavation XP
+            int excavationXp = ExcavationSkillManager.getXpForBlock(brokenBlock);
+            if (excavationXp > 0) {
+                data.addXP(SkillType.EXCAVATION, serverPlayer, excavationXp);
             }
         });
     }
