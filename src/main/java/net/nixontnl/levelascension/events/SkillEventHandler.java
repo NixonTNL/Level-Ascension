@@ -8,6 +8,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.CropBlock;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.item.*;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -15,6 +16,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.nixontnl.levelascension.skills.SkillType;
+import net.nixontnl.levelascension.skills.logic.beastmastery.BeastmasterySkillManager;
 import net.nixontnl.levelascension.skills.logic.cooking.CookingSkillManager;
 import net.nixontnl.levelascension.skills.logic.excavation.ExcavationSkillManager;
 import net.nixontnl.levelascension.skills.logic.farming.FarmingSkillManager;
@@ -33,7 +35,7 @@ public class SkillEventHandler {
 
     public static void register() {
 
-        // Block breaking (Mining, Woodcutting, Excavation, Farming)
+        // BLOCK BREAK EVENTS (Mining, Woodcutting, Excavation, Farming)
         PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, blockEntity) -> {
             if (!(player instanceof ServerPlayerEntity serverPlayer)) return;
 
@@ -44,29 +46,21 @@ public class SkillEventHandler {
             Block brokenBlock = state.getBlock();
 
             int miningXp = MiningSkillManager.getXpForBlock(brokenBlock);
-            if (miningXp > 0) {
-                data.addXP(SkillType.MINING, serverPlayer, miningXp);
-            }
+            if (miningXp > 0) data.addXP(SkillType.MINING, serverPlayer, miningXp);
 
             int woodcuttingXp = WoodcuttingSkillManager.getXpForBlock(brokenBlock);
-            if (woodcuttingXp > 0) {
-                data.addXP(SkillType.WOODCUTTING, serverPlayer, woodcuttingXp);
-            }
+            if (woodcuttingXp > 0) data.addXP(SkillType.WOODCUTTING, serverPlayer, woodcuttingXp);
 
             int excavationXp = ExcavationSkillManager.getXpForBlock(brokenBlock);
-            if (excavationXp > 0) {
-                data.addXP(SkillType.EXCAVATION, serverPlayer, excavationXp);
-            }
+            if (excavationXp > 0) data.addXP(SkillType.EXCAVATION, serverPlayer, excavationXp);
 
             if (brokenBlock instanceof CropBlock crop && crop.isMature(state)) {
                 int farmingXp = FarmingSkillManager.getXpForBlock(brokenBlock);
-                if (farmingXp > 0) {
-                    data.addXP(SkillType.FARMING, serverPlayer, farmingXp);
-                }
+                if (farmingXp > 0) data.addXP(SkillType.FARMING, serverPlayer, farmingXp);
             }
         });
 
-        // Tilling farmland
+        // TILLING
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
             if (!(player instanceof ServerPlayerEntity serverPlayer)) return ActionResult.PASS;
 
@@ -76,15 +70,14 @@ public class SkillEventHandler {
 
             if (stack.getItem() instanceof HoeItem &&
                     (state.isOf(Blocks.DIRT) || state.isOf(Blocks.GRASS_BLOCK) || state.isOf(Blocks.COARSE_DIRT))) {
-
                 PlayerSkillData data = getSkillData(player.getUuid());
-                data.addXP(SkillType.FARMING, serverPlayer, 1); // 1 XP for tilling
+                data.addXP(SkillType.FARMING, serverPlayer, 1);
             }
 
             return ActionResult.PASS;
         });
 
-        // Planting seeds
+        // PLANTING
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
             if (!(player instanceof ServerPlayerEntity serverPlayer)) return ActionResult.PASS;
 
@@ -99,13 +92,13 @@ public class SkillEventHandler {
                             itemId.getPath().contains("nether_wart")
             )) {
                 PlayerSkillData data = getSkillData(player.getUuid());
-                data.addXP(SkillType.FARMING, serverPlayer, 1); // 1 XP for planting
+                data.addXP(SkillType.FARMING, serverPlayer, 1);
             }
 
             return ActionResult.PASS;
         });
 
-        // Combat kills (Melee & Ranged XP)
+        // COMBAT: Melee, Ranged, Beastmastery (Hunting)
         ServerEntityCombatEvents.AFTER_KILLED_OTHER_ENTITY.register((world, entity, killedEntity) -> {
             if (!(entity instanceof ServerPlayerEntity player)) return;
             if (!(killedEntity instanceof LivingEntity livingTarget)) return;
@@ -120,6 +113,16 @@ public class SkillEventHandler {
             } else if (isRanged) {
                 RangedSkillManager.handleRangedXp(player, livingTarget);
             }
+
+            BeastmasterySkillManager.handlePassiveKillXp(player, livingTarget);
+        });
+
+        // BREEDING (calls from mixin trigger)
+        PlayerBreedAnimalsCallback.EVENT.register((player, parent1, parent2, child) -> {
+            if (player instanceof ServerPlayerEntity serverPlayer && child instanceof LivingEntity living) {
+                BeastmasterySkillManager.handleBreedXp(serverPlayer, living);
+            }
+            return ActionResult.PASS;
         });
     }
 

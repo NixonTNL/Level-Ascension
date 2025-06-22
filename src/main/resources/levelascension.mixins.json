@@ -7,7 +7,9 @@
 		"FishingBobberEntityAccessor",
 		"ServerPlayerInteractionManagerMixin",
 		"FurnaceSlotMixin",
-		"CraftingResultSlotMixin"
+		"CraftingResultSlotMixin",
+		"TameableEntityMixin",
+		"AnimalEntityMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
