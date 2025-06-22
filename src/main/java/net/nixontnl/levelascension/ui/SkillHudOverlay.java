@@ -56,6 +56,7 @@ public class SkillHudOverlay implements ClientModInitializer {
             ctx.fill(barX, y, barX + fillWidth, y + barHeight, 0xFF2ECC71); // Fill
 
             ItemStack icon = new ItemStack(
+                    activeSkill == SkillType.FARMING ? Items.DIAMOND_HOE :
                     activeSkill == SkillType.FISHING ? Items.FISHING_ROD :
                     activeSkill == SkillType.WOODCUTTING ? Items.DIAMOND_AXE :
                     activeSkill == SkillType.EXCAVATION ? Items.DIAMOND_SHOVEL :

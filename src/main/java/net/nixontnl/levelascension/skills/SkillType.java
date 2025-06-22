@@ -9,7 +9,8 @@ public enum SkillType {
     MINING("mining"),
     WOODCUTTING("woodcutting"),
     EXCAVATION("excavation"),
-    FISHING("fishing");
+    FISHING("fishing"),
+    FARMING ("farming");
 
     private final String name;
 
