@@ -7,24 +7,21 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.CropBlock;
-import net.minecraft.item.HoeItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Item;
-import net.minecraft.item.SwordItem;
-import net.minecraft.item.AxeItem;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.item.*;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.entity.LivingEntity;
 import net.nixontnl.levelascension.skills.SkillType;
 import net.nixontnl.levelascension.skills.logic.cooking.CookingSkillManager;
 import net.nixontnl.levelascension.skills.logic.excavation.ExcavationSkillManager;
 import net.nixontnl.levelascension.skills.logic.farming.FarmingSkillManager;
-import net.nixontnl.levelascension.skills.logic.mining.MiningSkillManager;
-import net.nixontnl.levelascension.skills.logic.woodcutting.WoodcuttingSkillManager;
 import net.nixontnl.levelascension.skills.logic.melee.MeleeSkillManager;
+import net.nixontnl.levelascension.skills.logic.mining.MiningSkillManager;
+import net.nixontnl.levelascension.skills.logic.ranged.RangedSkillManager;
+import net.nixontnl.levelascension.skills.logic.woodcutting.WoodcuttingSkillManager;
 import net.nixontnl.levelascension.skills.player.PlayerSkillData;
 
 import java.util.HashMap;
@@ -46,25 +43,21 @@ public class SkillEventHandler {
 
             Block brokenBlock = state.getBlock();
 
-            // Mining
             int miningXp = MiningSkillManager.getXpForBlock(brokenBlock);
             if (miningXp > 0) {
                 data.addXP(SkillType.MINING, serverPlayer, miningXp);
             }
 
-            // Woodcutting
             int woodcuttingXp = WoodcuttingSkillManager.getXpForBlock(brokenBlock);
             if (woodcuttingXp > 0) {
                 data.addXP(SkillType.WOODCUTTING, serverPlayer, woodcuttingXp);
             }
 
-            // Excavation
             int excavationXp = ExcavationSkillManager.getXpForBlock(brokenBlock);
             if (excavationXp > 0) {
                 data.addXP(SkillType.EXCAVATION, serverPlayer, excavationXp);
             }
 
-            // Farming (only fully grown crops)
             if (brokenBlock instanceof CropBlock crop && crop.isMature(state)) {
                 int farmingXp = FarmingSkillManager.getXpForBlock(brokenBlock);
                 if (farmingXp > 0) {
@@ -73,7 +66,7 @@ public class SkillEventHandler {
             }
         });
 
-        // Tilling (Farming XP)
+        // Tilling farmland
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
             if (!(player instanceof ServerPlayerEntity serverPlayer)) return ActionResult.PASS;
 
@@ -91,7 +84,7 @@ public class SkillEventHandler {
             return ActionResult.PASS;
         });
 
-        // Planting (Farming XP)
+        // Planting seeds
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
             if (!(player instanceof ServerPlayerEntity serverPlayer)) return ActionResult.PASS;
 
@@ -112,18 +105,20 @@ public class SkillEventHandler {
             return ActionResult.PASS;
         });
 
-        // Melee Combat (Melee XP)
+        // Combat kills (Melee & Ranged XP)
         ServerEntityCombatEvents.AFTER_KILLED_OTHER_ENTITY.register((world, entity, killedEntity) -> {
             if (!(entity instanceof ServerPlayerEntity player)) return;
             if (!(killedEntity instanceof LivingEntity livingTarget)) return;
 
             Item heldItem = player.getMainHandStack().getItem();
 
-            boolean isWeapon = heldItem instanceof SwordItem || heldItem instanceof AxeItem ||
-                    heldItem.getTranslationKey().contains("mace"); // Optional: Add more logic here
+            boolean isMelee = heldItem instanceof SwordItem || heldItem instanceof AxeItem || heldItem.getTranslationKey().contains("mace");
+            boolean isRanged = heldItem instanceof BowItem || heldItem instanceof CrossbowItem || heldItem instanceof TridentItem;
 
-            if (isWeapon) {
+            if (isMelee) {
                 MeleeSkillManager.handleMeleeXp(player, livingTarget);
+            } else if (isRanged) {
+                RangedSkillManager.handleRangedXp(player, livingTarget);
             }
         });
     }

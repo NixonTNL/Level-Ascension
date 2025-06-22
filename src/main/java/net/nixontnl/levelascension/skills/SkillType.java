@@ -12,7 +12,8 @@ public enum SkillType {
     FISHING("fishing"),
     FARMING ("farming"),
     COOKING ("cooking"),
-    MELEE ("melee");
+    MELEE ("melee"),
+    RANGED ("ranged");
 
     private final String name;
 
