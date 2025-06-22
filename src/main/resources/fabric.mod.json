@@ -10,6 +10,7 @@
 	},
 	"license": "MIT",
 	"environment": "*",
+
 	"entrypoints": {
 		"main": [
 			"net.nixontnl.levelascension.core.LevelAscension"
@@ -18,6 +19,11 @@
 			"net.nixontnl.levelascension.ui.SkillHudOverlay"
 		]
 	},
+
+	"mixins": [
+		"levelascension.mixins.json"
+	],
+
 	"depends": {
 		"fabricloader": ">=0.16.14",
 		"minecraft": "1.21.1",

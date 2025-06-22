@@ -30,6 +30,7 @@ public class PlayerSkillData {
         if (skill != null) {
             skill.addXP(player, amount);
             SkillHudOverlay.setActiveSkill(type);
+            System.out.println("Setting active skill to: " + type);
         }
     }
 

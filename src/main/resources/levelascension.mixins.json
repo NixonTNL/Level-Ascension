@@ -3,9 +3,9 @@
 	"package": "net.nixontnl.levelascension.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
-
+		"FishingXPHandlerMixin",
+		"FishingBobberEntityAccessor"
 	],
-	"client": [],
 	"injectors": {
 		"defaultRequire": 1
 	}

@@ -48,6 +48,7 @@ public class SkillEventHandler {
     }
 
     public static PlayerSkillData getSkillData(UUID playerId) {
+        playerSkillDataMap.putIfAbsent(playerId, new PlayerSkillData());
         return playerSkillDataMap.get(playerId);
     }
 }
