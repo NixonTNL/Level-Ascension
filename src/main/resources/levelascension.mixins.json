@@ -4,7 +4,10 @@
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
 		"FishingXPHandlerMixin",
-		"FishingBobberEntityAccessor"
+		"FishingBobberEntityAccessor",
+		"ServerPlayerInteractionManagerMixin",
+		"FurnaceSlotMixin",
+		"CraftingResultSlotMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

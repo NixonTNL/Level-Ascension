@@ -14,6 +14,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.nixontnl.levelascension.skills.SkillType;
+import net.nixontnl.levelascension.skills.logic.cooking.CookingSkillManager;
 import net.nixontnl.levelascension.skills.logic.excavation.ExcavationSkillManager;
 import net.nixontnl.levelascension.skills.logic.farming.FarmingSkillManager;
 import net.nixontnl.levelascension.skills.logic.mining.MiningSkillManager;
@@ -104,6 +105,22 @@ public class SkillEventHandler {
 
             return ActionResult.PASS;
         });
+    }
+
+
+    public static void handleCookingXp(ServerPlayerEntity player, ItemStack stack, String sourceId) {
+        PlayerSkillData data = getSkillData(player.getUuid());
+
+        int xp = CookingSkillManager.getXpForCookedItem(stack.getItem(), sourceId);
+        if (xp > 0) {
+            data.addXP(SkillType.COOKING, player, xp);
+            System.out.println("Gave " + xp + " Cooking XP to " + player.getName().getString());
+        }
+    }
+
+
+    public static int getCookingXpPreview(ItemStack stack) {
+        return CookingSkillManager.getXpForCookedItem(stack.getItem(), "minecraft:campfire");
     }
 
     public static PlayerSkillData getSkillData(UUID playerId) {
