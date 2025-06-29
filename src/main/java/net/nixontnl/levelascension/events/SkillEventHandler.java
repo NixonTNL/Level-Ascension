@@ -1,14 +1,13 @@
 package net.nixontnl.levelascension.events;
 
+import net.fabricmc.fabric.api.entity.event.v1.ServerEntityCombatEvents;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
-import net.fabricmc.fabric.api.entity.event.v1.ServerEntityCombatEvents;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.CropBlock;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.item.*;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -16,6 +15,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.nixontnl.levelascension.skills.SkillType;
+import net.nixontnl.levelascension.skills.logic.alchemy.AlchemySkillManager;
 import net.nixontnl.levelascension.skills.logic.beastmastery.BeastmasterySkillManager;
 import net.nixontnl.levelascension.skills.logic.cooking.CookingSkillManager;
 import net.nixontnl.levelascension.skills.logic.excavation.ExcavationSkillManager;
@@ -35,7 +35,6 @@ public class SkillEventHandler {
 
     public static void register() {
 
-        // BLOCK BREAK EVENTS (Mining, Woodcutting, Excavation, Farming)
         PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, blockEntity) -> {
             if (!(player instanceof ServerPlayerEntity serverPlayer)) return;
 
@@ -60,7 +59,6 @@ public class SkillEventHandler {
             }
         });
 
-        // TILLING
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
             if (!(player instanceof ServerPlayerEntity serverPlayer)) return ActionResult.PASS;
 
@@ -74,10 +72,13 @@ public class SkillEventHandler {
                 data.addXP(SkillType.FARMING, serverPlayer, 1);
             }
 
+            if (stack.getItem() instanceof SplashPotionItem) {
+                handleAlchemyXp(serverPlayer, stack, 1, false, false); // default call
+            }
+
             return ActionResult.PASS;
         });
 
-        // PLANTING
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
             if (!(player instanceof ServerPlayerEntity serverPlayer)) return ActionResult.PASS;
 
@@ -98,7 +99,6 @@ public class SkillEventHandler {
             return ActionResult.PASS;
         });
 
-        // COMBAT: Melee, Ranged, Beastmastery (Hunting)
         ServerEntityCombatEvents.AFTER_KILLED_OTHER_ENTITY.register((world, entity, killedEntity) -> {
             if (!(entity instanceof ServerPlayerEntity player)) return;
             if (!(killedEntity instanceof LivingEntity livingTarget)) return;
@@ -117,7 +117,6 @@ public class SkillEventHandler {
             BeastmasterySkillManager.handlePassiveKillXp(player, livingTarget);
         });
 
-        // BREEDING (calls from mixin trigger)
         PlayerBreedAnimalsCallback.EVENT.register((player, parent1, parent2, child) -> {
             if (player instanceof ServerPlayerEntity serverPlayer && child instanceof LivingEntity living) {
                 BeastmasterySkillManager.handleBreedXp(serverPlayer, living);
@@ -135,6 +134,30 @@ public class SkillEventHandler {
             System.out.println("Gave " + xp + " Cooking XP to " + player.getName().getString());
         }
     }
+
+    // NEW method with upgrade flags (used when brewing upgrade info is available)
+    public static void handleAlchemyXp(ServerPlayerEntity player, ItemStack stack, int amount, boolean isStrong, boolean isExtended) {
+        PlayerSkillData data = getSkillData(player.getUuid());
+
+        int baseXp = AlchemySkillManager.getXpForPotion(stack);
+        int bonusXp = 0;
+
+        if (isStrong) bonusXp += 100;      // smaller bonus to avoid overinflation
+        if (isExtended) bonusXp += 100;
+
+        int totalXp = (baseXp + bonusXp) * amount;
+
+        if (totalXp > 0) {
+            data.addXP(SkillType.ALCHEMY, player, totalXp);
+            System.out.println("Gave " + totalXp + " Alchemy XP to " + player.getName().getString());
+        }
+    }
+
+    // Backward-compatible fallback
+    public static void handleAlchemyXp(ServerPlayerEntity player, ItemStack stack, int amount) {
+        handleAlchemyXp(player, stack, amount, false, false);
+    }
+
 
     public static int getCookingXpPreview(ItemStack stack) {
         return CookingSkillManager.getXpForCookedItem(stack.getItem(), "minecraft:campfire");

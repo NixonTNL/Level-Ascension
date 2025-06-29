@@ -14,7 +14,8 @@ public enum SkillType {
     COOKING ("cooking"),
     MELEE ("melee"),
     RANGED ("ranged"),
-    BEAST_MASTERY ("beast mastery");
+    BEAST_MASTERY ("beast mastery"),
+    ALCHEMY ("alchemy");
 
     private final String name;
 
