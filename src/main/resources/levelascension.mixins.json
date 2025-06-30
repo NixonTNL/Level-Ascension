@@ -14,7 +14,9 @@
 		"BrewingSlotMixin",
 		"PotionEntityMixin",
 		"BrushItemMixin",
-		"BrushableBlockEntityMixin"
+		"BrushableBlockEntityMixin",
+		"EnchantmentScreenHandlerMixin",
+		"AnvilScreenHandlerMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

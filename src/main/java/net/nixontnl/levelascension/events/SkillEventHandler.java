@@ -177,7 +177,14 @@ public class SkillEventHandler {
         }
     }
 
+    public static void handleEnchantingXp(ServerPlayerEntity player, int xp) {
+        PlayerSkillData data = getSkillData(player.getUuid());
 
+        if (xp > 0) {
+            data.addXP(SkillType.ENCHANTING, player, xp);
+            System.out.println("Gave " + xp + " Enchanting XP to " + player.getName().getString());
+        }
+    }
 
 
 
