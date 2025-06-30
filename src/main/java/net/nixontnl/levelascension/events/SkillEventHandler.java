@@ -3,6 +3,7 @@ package net.nixontnl.levelascension.events;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityCombatEvents;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -13,9 +14,11 @@ import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.nixontnl.levelascension.skills.SkillType;
 import net.nixontnl.levelascension.skills.logic.alchemy.AlchemySkillManager;
+import net.nixontnl.levelascension.skills.logic.archaeology.ArchaeologySkillManager;
 import net.nixontnl.levelascension.skills.logic.beastmastery.BeastmasterySkillManager;
 import net.nixontnl.levelascension.skills.logic.cooking.CookingSkillManager;
 import net.nixontnl.levelascension.skills.logic.excavation.ExcavationSkillManager;
@@ -153,6 +156,7 @@ public class SkillEventHandler {
         }
     }
 
+
     // Backward-compatible fallback
     public static void handleAlchemyXp(ServerPlayerEntity player, ItemStack stack, int amount) {
         handleAlchemyXp(player, stack, amount, false, false);
@@ -162,6 +166,20 @@ public class SkillEventHandler {
     public static int getCookingXpPreview(ItemStack stack) {
         return CookingSkillManager.getXpForCookedItem(stack.getItem(), "minecraft:campfire");
     }
+
+    public static void handleArchaeologyXp(ServerPlayerEntity player, ItemStack stack, int amount) {
+        PlayerSkillData data = getSkillData(player.getUuid());
+
+        int xp = ArchaeologySkillManager.getXpForArtifact(stack); // Correct method
+        if (xp > 0) {
+            data.addXP(SkillType.ARCHAEOLOGY, player, xp * amount);
+            System.out.println("Gave " + (xp * amount) + " Archaeology XP to " + player.getName().getString());
+        }
+    }
+
+
+
+
 
     public static PlayerSkillData getSkillData(UUID playerId) {
         playerSkillDataMap.putIfAbsent(playerId, new PlayerSkillData());

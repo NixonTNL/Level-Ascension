@@ -12,7 +12,9 @@
 		"AnimalEntityMixin",
 		"BrewingStandBlockEntityMixin",
 		"BrewingSlotMixin",
-		"PotionEntityMixin"
+		"PotionEntityMixin",
+		"BrushItemMixin",
+		"BrushableBlockEntityMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
