@@ -42,7 +42,7 @@ public class SkillHudOverlay implements ClientModInitializer {
             int baseX = (screenWidth / 2) - (totalWidth / 2) - 10;
             int iconX = baseX;
             int barX = iconX + iconSize + spacing;
-            int y = screenHeight - 46;
+            int y = screenHeight - 52;
 
             int xp = data.getSkill(activeSkill).getXP();
             int level = data.getSkill(activeSkill).getLevel();
@@ -56,6 +56,7 @@ public class SkillHudOverlay implements ClientModInitializer {
             ctx.fill(barX, y, barX + fillWidth, y + barHeight, 0xFF2ECC71); // Fill
 
             ItemStack icon = new ItemStack(
+                    activeSkill == SkillType.SMITHING ? Items.ANVIL :
                     activeSkill == SkillType.ENCHANTING ? Items.ENCHANTED_BOOK :
                     activeSkill == SkillType.ARCHAEOLOGY ? Items.BRUSH :
                     activeSkill == SkillType.ALCHEMY ? Items.POTION :

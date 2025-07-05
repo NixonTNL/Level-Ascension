@@ -16,7 +16,8 @@
 		"BrushItemMixin",
 		"BrushableBlockEntityMixin",
 		"EnchantmentScreenHandlerMixin",
-		"AnvilScreenHandlerMixin"
+		"AnvilScreenHandlerMixin",
+		"FurnaceSlotMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

@@ -17,7 +17,8 @@ public enum SkillType {
     BEAST_MASTERY ("beast mastery"),
     ALCHEMY ("alchemy"),
     ARCHAEOLOGY ("archaeology"),
-    ENCHANTING ("enchanting");
+    ENCHANTING ("enchanting"),
+    SMITHING ("smithing");
 
     private final String name;
 

@@ -4,7 +4,9 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.AnvilScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.nixontnl.levelascension.events.SkillEventHandler;
 import net.nixontnl.levelascension.skills.logic.enchanting.EnchantingSkillManager;
+import net.nixontnl.levelascension.skills.logic.smithing.SmithingSkillManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -17,10 +19,19 @@ public class AnvilScreenHandlerMixin {
     private void onTakeEnchantOutput(PlayerEntity player, ItemStack stack, CallbackInfo ci) {
         if (!(player instanceof ServerPlayerEntity serverPlayer)) return;
 
-        // Get total XP cost of the anvil operation
-        int cost = ((AnvilScreenHandler)(Object)this).getLevelCost();
+        AnvilScreenHandler handler = (AnvilScreenHandler) (Object) this;
 
-        // Send to skill manager
-        EnchantingSkillManager.handleEnchantingXp(serverPlayer, stack.copy(), cost);
+        ItemStack input1 = handler.getSlot(0).getStack();
+        ItemStack input2 = handler.getSlot(1).getStack();
+        ItemStack result = stack.copy();
+
+        // Check if the result is ore-based gear
+        int smithingXp = SmithingSkillManager.getXpForRepair(input1, input2, result);
+        if (smithingXp > 0) {
+            SkillEventHandler.handleSmithingRepairXp(serverPlayer, input1, input2, result);
+        } else {
+            int cost = handler.getLevelCost();
+            EnchantingSkillManager.handleEnchantingXp(serverPlayer, result, cost);
+        }
     }
 }

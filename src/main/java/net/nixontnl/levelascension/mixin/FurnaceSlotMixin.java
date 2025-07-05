@@ -1,41 +1,72 @@
 package net.nixontnl.levelascension.mixin;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.slot.FurnaceOutputSlot;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.world.World;
-import net.nixontnl.levelascension.events.SkillEventHandler;
-import net.minecraft.block.BlockState;
 import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.Inventory;
+import net.minecraft.item.ItemStack;
+import net.minecraft.registry.Registries;
+import net.minecraft.screen.slot.FurnaceOutputSlot;
+import net.minecraft.screen.slot.Slot;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
+import net.nixontnl.levelascension.events.SkillEventHandler;
+import net.nixontnl.levelascension.skills.logic.cooking.CookingSkillManager;
+import net.nixontnl.levelascension.skills.logic.smithing.SmithingSkillManager;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import net.minecraft.server.network.ServerPlayerEntity;
-
 
 @Mixin(FurnaceOutputSlot.class)
 public abstract class FurnaceSlotMixin extends Slot {
 
     public FurnaceSlotMixin() {
-        super(null, 0, 0, 0); // dummy constructor for Mixin compatibility
+        super(null, 0, 0, 0);
+    }
+
+    @Unique
+    private ItemStack cachedResult = null;
+
+    @Unique
+    private int cachedAmount = 0;
+
+    @Inject(method = "onCrafted", at = @At("TAIL"))
+    private void onCraftedInject(ItemStack stack, int amount, CallbackInfo ci) {
+        // Cache the result and amount to use during onTakeItem
+        this.cachedResult = stack.copy();
+        this.cachedAmount = amount;
     }
 
     @Inject(method = "onTakeItem", at = @At("TAIL"))
-    private void onTakeCookedItem(PlayerEntity player, ItemStack stack, CallbackInfo ci) {
-        World world = player.getWorld();
-        BlockPos playerPos = player.getBlockPos();
+    private void onTakeItemInject(PlayerEntity player, ItemStack stack, CallbackInfo ci) {
+        if (!(player instanceof ServerPlayerEntity serverPlayer)) return;
+        if (cachedResult == null || cachedAmount <= 0) return;
 
-        // Get the furnace/smoker/blast furnace block under or near the player
-        BlockPos blockUnder = playerPos.down();
-        BlockState state = world.getBlockState(blockUnder);
-        String block = String.valueOf(state.getBlock());
+        Inventory inventory = this.inventory;
+        if (!(inventory instanceof AbstractFurnaceBlockEntity furnaceEntity)) return;
 
-        if (player instanceof ServerPlayerEntity serverPlayer) {
-            SkillEventHandler.handleCookingXp(serverPlayer, stack, block); // ✅ Good
+        World world = furnaceEntity.getWorld();
+        BlockPos pos = furnaceEntity.getPos();
+        Block block = world.getBlockState(pos).getBlock();
+        String blockId = Registries.BLOCK.getId(block).toString();
+
+        int smithingXp = SmithingSkillManager.getXpForSmelting(cachedResult);
+        int cookingXp = CookingSkillManager.getXpForCookedItem(cachedResult.getItem(), blockId);
+
+        System.out.println("🔥 Shift-click XP from " + blockId + " for " + cachedResult.getItem());
+
+        if ((block == Blocks.BLAST_FURNACE || block == Blocks.FURNACE) && smithingXp > 0) {
+            SkillEventHandler.handleSmithingSmeltXp(serverPlayer, cachedResult, cachedAmount);
+        } else if ((block == Blocks.SMOKER || block == Blocks.FURNACE) && cookingXp > 0) {
+            SkillEventHandler.handleCookingXp(serverPlayer, cachedResult, blockId);
         }
 
+        // Clear cached state
+        cachedResult = null;
+        cachedAmount = 0;
     }
 }

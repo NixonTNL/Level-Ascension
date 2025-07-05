@@ -3,18 +3,13 @@ package net.nixontnl.levelascension.events;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityCombatEvents;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
-import net.fabricmc.fabric.api.event.player.UseItemCallback;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.CropBlock;
+import net.minecraft.block.*;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.*;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.nixontnl.levelascension.skills.SkillType;
 import net.nixontnl.levelascension.skills.logic.alchemy.AlchemySkillManager;
@@ -26,6 +21,7 @@ import net.nixontnl.levelascension.skills.logic.farming.FarmingSkillManager;
 import net.nixontnl.levelascension.skills.logic.melee.MeleeSkillManager;
 import net.nixontnl.levelascension.skills.logic.mining.MiningSkillManager;
 import net.nixontnl.levelascension.skills.logic.ranged.RangedSkillManager;
+import net.nixontnl.levelascension.skills.logic.smithing.SmithingSkillManager;
 import net.nixontnl.levelascension.skills.logic.woodcutting.WoodcuttingSkillManager;
 import net.nixontnl.levelascension.skills.player.PlayerSkillData;
 
@@ -37,7 +33,6 @@ public class SkillEventHandler {
     public static final HashMap<UUID, PlayerSkillData> playerSkillDataMap = new HashMap<>();
 
     public static void register() {
-
         PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, blockEntity) -> {
             if (!(player instanceof ServerPlayerEntity serverPlayer)) return;
 
@@ -130,59 +125,73 @@ public class SkillEventHandler {
 
     public static void handleCookingXp(ServerPlayerEntity player, ItemStack stack, String sourceId) {
         PlayerSkillData data = getSkillData(player.getUuid());
-
         int xp = CookingSkillManager.getXpForCookedItem(stack.getItem(), sourceId);
         if (xp > 0) {
             data.addXP(SkillType.COOKING, player, xp);
-            System.out.println("Gave " + xp + " Cooking XP to " + player.getName().getString());
+            System.out.println("🍳 Cooking XP: " + xp + " from " + stack.getItem());
         }
     }
 
-    // NEW method with upgrade flags (used when brewing upgrade info is available)
+
     public static void handleAlchemyXp(ServerPlayerEntity player, ItemStack stack, int amount, boolean isStrong, boolean isExtended) {
         PlayerSkillData data = getSkillData(player.getUuid());
-
         int baseXp = AlchemySkillManager.getXpForPotion(stack);
         int bonusXp = 0;
-
-        if (isStrong) bonusXp += 100;      // smaller bonus to avoid overinflation
+        if (isStrong) bonusXp += 100;
         if (isExtended) bonusXp += 100;
 
         int totalXp = (baseXp + bonusXp) * amount;
 
         if (totalXp > 0) {
             data.addXP(SkillType.ALCHEMY, player, totalXp);
-            System.out.println("Gave " + totalXp + " Alchemy XP to " + player.getName().getString());
+            System.out.println("🧪 Alchemy XP: " + totalXp + " from " + stack.getItem());
         }
     }
 
-
-    // Backward-compatible fallback
     public static void handleAlchemyXp(ServerPlayerEntity player, ItemStack stack, int amount) {
         handleAlchemyXp(player, stack, amount, false, false);
     }
 
-
-    public static int getCookingXpPreview(ItemStack stack) {
-        return CookingSkillManager.getXpForCookedItem(stack.getItem(), "minecraft:campfire");
-    }
-
     public static void handleArchaeologyXp(ServerPlayerEntity player, ItemStack stack, int amount) {
         PlayerSkillData data = getSkillData(player.getUuid());
-
-        int xp = ArchaeologySkillManager.getXpForArtifact(stack); // Correct method
+        int xp = ArchaeologySkillManager.getXpForArtifact(stack);
         if (xp > 0) {
             data.addXP(SkillType.ARCHAEOLOGY, player, xp * amount);
-            System.out.println("Gave " + (xp * amount) + " Archaeology XP to " + player.getName().getString());
         }
     }
 
     public static void handleEnchantingXp(ServerPlayerEntity player, int xp) {
         PlayerSkillData data = getSkillData(player.getUuid());
-
         if (xp > 0) {
             data.addXP(SkillType.ENCHANTING, player, xp);
-            System.out.println("Gave " + xp + " Enchanting XP to " + player.getName().getString());
+        }
+    }
+
+    public static int getCookingXpPreview(ItemStack stack) {
+        return CookingSkillManager.getXpForCookedItem(stack.getItem(), "minecraft:campfire");
+    }
+
+    public static void handleSmithingSmeltXp(ServerPlayerEntity player, ItemStack stack, int amount) {
+        PlayerSkillData data = getSkillData(player.getUuid());
+        int xp = SmithingSkillManager.getXpForSmelting(stack) * amount;
+        if (xp > 0) {
+            data.addXP(SkillType.SMITHING, player, xp);
+        }
+    }
+
+    public static void handleSmithingCraftXp(ServerPlayerEntity player, ItemStack resultStack, int amountCrafted) {
+        PlayerSkillData data = getSkillData(player.getUuid());
+        int xp = SmithingSkillManager.getXpForCrafting(resultStack) * amountCrafted;
+        if (xp > 0) {
+            data.addXP(SkillType.SMITHING, player, xp);
+        }
+    }
+
+    public static void handleSmithingRepairXp(ServerPlayerEntity player, ItemStack base, ItemStack addition, ItemStack result) {
+        PlayerSkillData data = getSkillData(player.getUuid());
+        int xp = SmithingSkillManager.getXpForRepair(base, addition, result);
+        if (xp > 0) {
+            data.addXP(SkillType.SMITHING, player, xp);
         }
     }
 
