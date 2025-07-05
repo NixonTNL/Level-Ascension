@@ -56,4 +56,7 @@ public class CookingSkillManager {
         return 0; // ✅ fallback value
     }
 
+    public static boolean isCraftedFood(Item item) {
+        return CRAFTED_XP.containsKey(item);
+    }
 }

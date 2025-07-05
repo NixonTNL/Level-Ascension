@@ -132,6 +132,15 @@ public class SkillEventHandler {
         }
     }
 
+    public static void handleCookingCraftXp(ServerPlayerEntity player, ItemStack resultStack, int amountCrafted) {
+        int xpPerItem = CookingSkillManager.getXpForCraftedItem(resultStack.getItem());
+        int totalXp = xpPerItem * amountCrafted;
+
+        if (totalXp > 0) {
+            PlayerSkillData data = getSkillData(player.getUuid());
+            data.addXP(SkillType.COOKING, player, totalXp);
+        }
+    }
 
     public static void handleAlchemyXp(ServerPlayerEntity player, ItemStack stack, int amount, boolean isStrong, boolean isExtended) {
         PlayerSkillData data = getSkillData(player.getUuid());
@@ -146,10 +155,6 @@ public class SkillEventHandler {
             data.addXP(SkillType.ALCHEMY, player, totalXp);
             System.out.println("🧪 Alchemy XP: " + totalXp + " from " + stack.getItem());
         }
-    }
-
-    public static void handleAlchemyXp(ServerPlayerEntity player, ItemStack stack, int amount) {
-        handleAlchemyXp(player, stack, amount, false, false);
     }
 
     public static void handleArchaeologyXp(ServerPlayerEntity player, ItemStack stack, int amount) {
@@ -194,8 +199,6 @@ public class SkillEventHandler {
             data.addXP(SkillType.SMITHING, player, xp);
         }
     }
-
-
 
     public static PlayerSkillData getSkillData(UUID playerId) {
         playerSkillDataMap.putIfAbsent(playerId, new PlayerSkillData());

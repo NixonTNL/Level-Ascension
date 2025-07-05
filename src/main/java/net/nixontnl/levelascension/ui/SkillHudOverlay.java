@@ -8,6 +8,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.util.Identifier;
 import net.nixontnl.levelascension.events.SkillEventHandler;
+import net.nixontnl.levelascension.skills.Skill;
 import net.nixontnl.levelascension.skills.SkillType;
 import net.nixontnl.levelascension.skills.player.PlayerSkillData;
 import net.nixontnl.levelascension.util.XPUtils;
@@ -56,6 +57,7 @@ public class SkillHudOverlay implements ClientModInitializer {
             ctx.fill(barX, y, barX + fillWidth, y + barHeight, 0xFF2ECC71); // Fill
 
             ItemStack icon = new ItemStack(
+                    activeSkill == SkillType.CRAFTING ? Items.CRAFTING_TABLE :
                     activeSkill == SkillType.SMITHING ? Items.ANVIL :
                     activeSkill == SkillType.ENCHANTING ? Items.ENCHANTED_BOOK :
                     activeSkill == SkillType.ARCHAEOLOGY ? Items.BRUSH :
