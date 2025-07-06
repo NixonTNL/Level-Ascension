@@ -20,9 +20,12 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(FurnaceOutputSlot.class)
 public abstract class FurnaceSlotMixin extends Slot {
+
+    private PlayerEntity player;
 
     public FurnaceSlotMixin() {
         super(null, 0, 0, 0);
@@ -34,9 +37,9 @@ public abstract class FurnaceSlotMixin extends Slot {
     @Unique
     private int cachedAmount = 0;
 
+    // ✅ Catches shift-clicking stacks out of the furnace
     @Inject(method = "onCrafted", at = @At("TAIL"))
     private void onCraftedInject(ItemStack stack, int amount, CallbackInfo ci) {
-        // Cache the result and amount to use during onTakeItem
         this.cachedResult = stack.copy();
         this.cachedAmount = amount;
     }
@@ -57,16 +60,41 @@ public abstract class FurnaceSlotMixin extends Slot {
         int smithingXp = SmithingSkillManager.getXpForSmelting(cachedResult);
         int cookingXp = CookingSkillManager.getXpForCookedItem(cachedResult.getItem(), blockId);
 
-        System.out.println("🔥 Shift-click XP from " + blockId + " for " + cachedResult.getItem());
-
         if ((block == Blocks.BLAST_FURNACE || block == Blocks.FURNACE) && smithingXp > 0) {
             SkillEventHandler.handleSmithingSmeltXp(serverPlayer, cachedResult, cachedAmount);
         } else if ((block == Blocks.SMOKER || block == Blocks.FURNACE) && cookingXp > 0) {
             SkillEventHandler.handleCookingXp(serverPlayer, cachedResult, blockId);
         }
 
-        // Clear cached state
+        // Reset cache
         cachedResult = null;
         cachedAmount = 0;
+    }
+
+    // ✅ Catches normal clicking to take cooked items
+    @Inject(method = "takeStack", at = @At("TAIL"))
+    private void onTakeStackInject(int amount, CallbackInfoReturnable<ItemStack> cir) {
+        PlayerEntity player = this.player;
+        if (!(player instanceof ServerPlayerEntity serverPlayer)) return;
+
+        ItemStack resultStack = cir.getReturnValue();
+        if (resultStack.isEmpty()) return;
+
+        Inventory inventory = this.inventory;
+        if (!(inventory instanceof AbstractFurnaceBlockEntity furnaceEntity)) return;
+
+        World world = furnaceEntity.getWorld();
+        BlockPos pos = furnaceEntity.getPos();
+        Block block = world.getBlockState(pos).getBlock();
+        String blockId = Registries.BLOCK.getId(block).toString();
+
+        int smithingXp = SmithingSkillManager.getXpForSmelting(resultStack);
+        int cookingXp = CookingSkillManager.getXpForCookedItem(resultStack.getItem(), blockId);
+
+        if ((block == Blocks.BLAST_FURNACE || block == Blocks.FURNACE) && smithingXp > 0) {
+            SkillEventHandler.handleSmithingSmeltXp(serverPlayer, resultStack, amount);
+        } else if ((block == Blocks.SMOKER || block == Blocks.FURNACE) && cookingXp > 0) {
+            SkillEventHandler.handleCookingXp(serverPlayer, resultStack, blockId);
+        }
     }
 }

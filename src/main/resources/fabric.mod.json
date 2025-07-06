@@ -16,7 +16,8 @@
 			"net.nixontnl.levelascension.core.LevelAscension"
 		],
 		"client": [
-			"net.nixontnl.levelascension.ui.SkillHudOverlay"
+			"net.nixontnl.levelascension.ui.SkillHudOverlay",
+			"net.nixontnl.levelascension.core.LevelAscensionClient"
 		]
 	},
 

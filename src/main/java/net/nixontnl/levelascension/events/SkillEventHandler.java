@@ -26,11 +26,14 @@ import net.nixontnl.levelascension.skills.logic.woodcutting.WoodcuttingSkillMana
 import net.nixontnl.levelascension.skills.player.PlayerSkillData;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 public class SkillEventHandler {
 
     public static final HashMap<UUID, PlayerSkillData> playerSkillDataMap = new HashMap<>();
+    private static final Map<UUID, Long> seedPlaceCooldown = new HashMap<>();
+
 
     public static void register() {
         PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, blockEntity) -> {
@@ -88,10 +91,23 @@ public class SkillEventHandler {
                             itemId.getPath().contains("carrot") ||
                             itemId.getPath().contains("potato") ||
                             itemId.getPath().contains("beetroot") ||
-                            itemId.getPath().contains("nether_wart")
-            )) {
-                PlayerSkillData data = getSkillData(player.getUuid());
-                data.addXP(SkillType.FARMING, serverPlayer, 1);
+                            itemId.getPath().contains("nether_wart"))
+            ) {
+                BlockPos targetPos = hitResult.getBlockPos().offset(hitResult.getSide());
+                BlockState belowState = world.getBlockState(targetPos.down());
+                BlockState currentState = world.getBlockState(targetPos);
+
+                boolean validSoil = belowState.isOf(Blocks.FARMLAND) || belowState.isOf(Blocks.SOUL_SAND);
+                boolean isAirAbove = currentState.isAir();
+
+                long now = System.currentTimeMillis();
+                long lastTime = seedPlaceCooldown.getOrDefault(player.getUuid(), 0L);
+
+                if (validSoil && isAirAbove && now - lastTime > 250) { // 250ms cooldown
+                    PlayerSkillData data = getSkillData(player.getUuid());
+                    data.addXP(SkillType.FARMING, serverPlayer, 1);
+                    seedPlaceCooldown.put(player.getUuid(), now);
+                }
             }
 
             return ActionResult.PASS;
